@@ -1,0 +1,92 @@
+--- NecMPCL_orig.f	2023-09-17 14:31:16.000000000 -0400
++++ NecMPCL.f	2023-09-17 14:31:16.000000000 -0400
+@@ -18,8 +18,10 @@
+ c     Modifications marked @X# are by Roy Lewallen. All rights to these
+ c     are held by Lawrence Livermore National Security, LLC.
+ 
+-      USE IFQWIN
+-      USE IFPORT
++C FL ******
++C      USE IFQWIN
++C      USE IFPORT
++C FL ******
+ C     Numerical Electromagnetics Code (NEC-5)  Developed at Lawrence
+ C     Livermore National Laboratory, Livermore, CA.
+ C     (Contact G. Burke at 510-422-8414)
+@@ -936,27 +938,42 @@
+ C     GETIOF requests names for the input and output files and reads 
+ C     the names entered from the terminal.
+ C
+-      USE IFQWIN
+-      USE IFPORT
++C FL ****** 
++C      USE IFQWIN
++C      USE IFPORT
++C FL ******
+       USE MODEL_PARAM
+       IMPLICIT REAL*8 (A-H,O-Z)
+       CHARACTER INFILE*140,OUTFILE*140
+ C      CHARACTER DRIVE*10,DIR*80,FNAME*30,EXT*30
+       LOGICAL LDIR
+-      INTEGER*2 ISTAT
++C FL ******
++C      INTEGER*2 ISTAT
++C      INTEGER*2 ILENGTH
++      INTEGER ISTAT
++      INTEGER ILENGTH
++C FL ******
+       MAXERR=20
+ C
+ C     Check for command line arguments
+       IF(NARGS().GT.1)THEN
+-         CALL GETARG(1,INFILE,ISTAT)
+-         IF(ISTAT.EQ.-1)THEN
++C FL ******
++C         CALL GETARG(1,INFILE,ISTAT)
++         CALL GET_COMMAND_ARGUMENT(1,INFILE,ILENGTH,ISTAT)
++C         IF(ISTAT.EQ.-1)THEN
++         IF(ISTAT.NE.0)THEN
++C FL ******
+             WRITE(*,*)' ERROR getting input file from command line'
+             READ*
+             STOP
+          END IF
+          OPEN (UNIT=2,FILE=INFILE,STATUS='OLD',READONLY,ERR=3)
+-         CALL GETARG(2,OUTFILE,ISTAT)
+-         IF(ISTAT.EQ.-1)THEN
++C FL ******
++C         CALL GETARG(2,OUTFILE,ISTAT)
++         CALL GET_COMMAND_ARGUMENT(2,OUTFILE,ILENGTH,ISTAT)
++C         IF(ISTAT.EQ.-1)THEN
++         IF(ISTAT.NE.0)THEN
++C FL ******
+             WRITE(*,*)' ERROR getting output file from command line'
+             READ*
+             STOP
+@@ -979,8 +996,11 @@
+            OPEN (UNIT=2,FILE=INFILE,STATUS='OLD',READONLY,ERR=3)
+          END IF
+          INQUIRE(UNIT=2,NAME=INFILE)
+-         LENDIR=SPLITPATHQQ(INFILE,DRIVE,DIR,FNAME,EXT)
+-         LDIR=CHANGEDIRQQ(DIR)
++C FL ******
++C         LENDIR=SPLITPATHQQ(INFILE,DRIVE,DIR,FNAME,EXT)
++C         LDIR=CHANGEDIRQQ(DIR)
++C         CALL CHDIR(DIR)
++C FL ******
+       END IF
+ C
+ C     Open output file
+@@ -1042,8 +1062,10 @@
+ C     Purpose:
+ C     GETOFILE opens a file for output of model data in interactive mode
+ C     
+-      USE IFQWIN
+-      USE IFPORT
++C FL ******
++C      USE IFQWIN
++C      USE IFPORT
++C FL ******
+       CHARACTER FILNAME*(*)
+       CLOSE(UNIT=IUNIT,ERR=1)
+ 1     CONTINUE
