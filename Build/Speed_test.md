@@ -23,7 +23,7 @@ The following graphs show the execution times for various executables and hardwa
 Ten-year-old Intel server platform; AMD executables won't run on older Intel hardware.
 Version with static Intel libraries executes in 76% of time needed by dynamic/shared version.
 
-![Graph](2680.png)
+![Graph](img/2680.png)
 
 
 
@@ -32,18 +32,18 @@ Version with static Intel libraries executes in 76% of time needed by dynamic/sh
 Older (pre-Ryzen) AMD hardware; AMD executables won't run on pre-Ryzen AMD workstations either.
 Performance of Intel MKL is (I presume) intentionally impaired (but only with dynamic linking?)
 
-![Graph](8320.png)
+![Graph](img/8320.png)
 
 
 
 ### Google Cloud Platform N2D VM (AMD Epyx, 4 cores)
 
-![Graph](n2d.png)
+![Graph](img/n2d.png)
 
 
 
 ### Google Cloud Platform N2 VM (Intel Xeon, 4 cores)
 
-![Graph](n2.png)
+![Graph](img/n2.png)
 
 
