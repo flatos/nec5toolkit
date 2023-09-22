@@ -442,7 +442,7 @@ def nec5_sim_stdio2(designs, timelimit=100.0):
         while nrunning < PROCLIMIT and index < ndesigns:
             # p = subprocess.Popen(['../NEC/nec5', '/dev/stdin', '/dev/stdout'], 
             #                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            p = subprocess.Popen(['./nec5s', '/dev/stdin', '/dev/stdout'], 
+            p = subprocess.Popen(['~/Projects/VSCodeProjects/necopt/nec5s', '/dev/stdin', '/dev/stdout'], 
                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             p.stdin.write(bytes(designs[index], 'utf-8'))       # Send input design to process
             p.stdin.close()
