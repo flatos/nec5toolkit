@@ -1643,6 +1643,8 @@ def find_de_resfreq(necdesign, nfreq, fstart, fstep, depth=2):
 
 #%%------------------------------------------------
 
+import plotly.graph_objects as go
+
 
 # Slightly simplified syntax for specifying our arrays of segments:
 #  make_linear_element((0,0,0), (1,1,1), (2,3,4))   -->    [np.array([[0,0,0], [1,1,1], [2,3,4]])]
@@ -1791,7 +1793,7 @@ def gen_nec5_str(arrs, segs_per_m, radius, tag=1):
     return ''.join(ls)
 
             
-            
+
 
 
 
