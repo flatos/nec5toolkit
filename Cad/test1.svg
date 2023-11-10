@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="24.6944mm" height="25.0472mm"
+ viewBox="0 0 70 71"
+ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  version="1.2" baseProfile="tiny">
+<title>Qt SVG Document</title>
+<desc>Generated with Qt</desc>
+<defs>
+</defs>
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans" font-size="11" font-weight="400" font-style="normal" 
+>
+<rect x="0" y="0" width="70" height="71"/>
+</g>
+
+<g fill="none" stroke="#000000" stroke-opacity="1" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans" font-size="11" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="non-scaling-stroke" points="22,24 48,65 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="48,65 64,43 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="64,43 39,36 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="39,36 27,59 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="27,59 47,50 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="47,50 46,29 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="46,29 4,35 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="4,35 31,44 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="62,30 62,28 62,26 61,24 61,23 60,21 59,19 58,17 57,15 56,14 55,12 53,11 52,10 50,8 48,7 46,7 45,6 43,5 41,5 39,4 37,4 35,4 33,4 31,5 29,5 27,6 25,7 23,7 22,8 20,10 18,11 17,12 16,14 14,15 13,17 12,19 12,21 11,22 10,24 10,26 10,28 10,30 10,32 10,34 10,36 11,38 11,40 12,42 13,44 14,45 16,47 17,48 18,50 20,51 21,52 23,53 25,54 27,55 29,56 31,56 33,56 35,56 37,56 39,56 41,56 43,56 44,55 46,54 48,53 50,52 51,51 53,50 54,49 56,47 57,46 58,44 59,42 60,40 61,38 61,36 62,35 62,33 62,31 62,30 " />
+<polyline fill="none" vector-effect="non-scaling-stroke" points="55,48 55,46 54,44 54,42 53,41 51,39 50,38 48,37 46,36 44,35 42,35 40,35 38,35 37,36 35,37 33,38 32,40 31,41 30,43 29,45 29,47 28,49 29,51 29,53 30,54 31,56 32,58 34,59 36,60 37,61 39,61 41,61 43,61 45,61 47,60 49,59 51,58 52,57 53,55 54,53 55,51 55,49 55,48 " />
+</g>
+</g>
+</svg>
