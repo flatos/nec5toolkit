@@ -91,7 +91,7 @@ STANDARD
   9
 $CLAYER
   8
-0
+1
   9
 $CELTYPE
   6
@@ -1111,9 +1111,9 @@ AcDbViewportTableRecord
  21
 1
  12
-106.9704556086632
+101.3581550042952
  22
-108.8398422115331
+101.6017312253929
  13
 0
  23
@@ -1139,7 +1139,7 @@ AcDbViewportTableRecord
  37
 0
  40
-64.80540223282122
+56.99683573687011
  41
 1.341880341880342
  42
@@ -3469,6 +3469,54 @@ simplex
  44
 1
   0
+LINE
+  5
+6A
+100
+AcDbEntity
+  8
+1
+  6
+ByLayer
+ 62
+  256
+370
+   -1
+100
+AcDbLine
+ 10
+151.7372033608431
+ 20
+175
+ 11
+155.7372033608431
+ 21
+175
+  0
+LINE
+  5
+6B
+100
+AcDbEntity
+  8
+1
+  6
+ByLayer
+ 62
+  256
+370
+   -1
+100
+AcDbLine
+ 10
+177
+ 20
+175
+ 11
+181
+ 21
+175
+  0
 ENDSEC
   0
 SECTION
@@ -3501,7 +3549,7 @@ AcDbDictionary
   0
 PLOTSETTINGS
   5
-6A
+6C
 100
 AcDbPlotSettings
   6

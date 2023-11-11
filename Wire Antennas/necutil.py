@@ -1796,12 +1796,229 @@ def gen_nec5_str(arrs, segs_per_m, radius, tag=1):
 
 
 
-
-
-
-
-
 #%%------------------------------------------------
+
+# These contain various 'assert' statements to assure valid data; catch exceptions like this:
+# try:
+#     <your code>
+# except AssertionError:
+#     <deal with problem>
+
+#
+# Locate rising or falling edges of a function (used by res freq, BW estimation functions)
+#  (rising = crossing from < 0 to >= 0)
+#
+# Args:
+#   func        takes an array of frequencies, returns same-size array of real values
+#   fs, xs      the initial arrays of frequencies and values
+#   tol         iterates until consecutive freq estimates are less than tol (MHz)
+#   reverse     if False, find first rising edge, else find last falling edge
+#
+def zoom_to_edge(func, fs, xs, tol=0.001, reverse=False, debug=False):
+    assert np.any(xs>=0) and ((not reverse and xs[0]<0) or (reverse and xs[-1]<0))        # First (or last) value must be low
+    xs = xs.copy()
+
+    freq, niter = (-1, 0)
+    while (True):
+        niter += 1
+        assert niter < 100
+
+        xge0 = np.flatnonzero(xs>=0)                    # Indices of freqs with xs >= 0
+        i = xge0[-1] if reverse else xge0[0]-1          # i = index just before edge
+        flast = freq
+        freq = (fs[i]*xs[i+1] - fs[i+1]*xs[i]) / (xs[i+1] - xs[i])      # Interpolate to get best freq estimate
+        if np.abs(freq-flast) < tol:
+            break
+
+        # Zoom in
+        fs = np.linspace(fs[i], fs[i+1], num=len(fs))   # Zoom in between freqs closest to edge
+        xs[[0,-1]] = xs[[i,i+1]]                        # Retain prev values for start,end points
+        xs[1:-1] = func(fs[1:-1])                       #  ...and fill in middle values
+
+    if debug:
+        return (freq, niter)
+    return freq
+
+
+# #
+# # Test rig for above
+# #
+# for iter in range(10):
+#     freq0 = np.random.rand()*40 + 1.01                      # Some random freq
+#     freq1 = np.random.rand()*(50-freq0-6) + freq0 + 6   # Some larger freq
+#     def func(fs):
+#         return ((fs >= freq0) & (fs < freq1)) * 1.234 - 0.4321
+#     fs = np.linspace(1, 51, num=11)                     # Initial freqs
+#     xs = func(fs)                                       #  ...and values
+#     print('f ', freq0, zoom_to_edge(func, fs, xs, tol=0.001, reverse=False, debug=True))
+#     print('r ', freq1, zoom_to_edge(func, fs, xs, tol=0.001, reverse=True, debug=True))
+
+
+
+#
+# Find resonant frequency of a design
+#
+# Args:
+#   necstr      design as a single string; must include placeholders 'flow', 'fstep', 'fnum'
+#   flow, fhigh     extremes of frequency range to consider
+#   fnum        number of freq points in range [flow, fhigh]
+#   tol         freq tolerance to stop iteration (default: 0.001 MHz)
+#
+def find_res_freq(necstr, flow, fhigh, fnum=11, tol=0.001, debug=False):
+    # Func that converts freqs to reactance
+    def func(fs):
+        res = nec5_sim_stdio3([necstr.format(fnum=len(fs), flow=fs[0], fstep=(fs[-1]-fs[0])/(len(fs)-1))])
+        return np.imag([d[1] for d in res[0][0][0]])   
+    fs = np.linspace(flow, fhigh, num=fnum)                 # Initial freqs
+    xs = func(fs)                                           #  ...and values
+    return zoom_to_edge(func, fs, xs, tol=0.001, reverse=False, debug=debug)
+
+
+# #
+# # Test rig for above
+# #
+# # Simple dipole template
+# nec_dipole_start = """CE Dipole
+# """
+# gw_card = 'GW 1 10 0 0 {z} 0 {y} {z} 0.001\n'
+# nec_dipole_end = """GX 100 010
+# GE 1 0
+# GD 0 0 0 0 13 0.005 0 0
+# EX 4 1 1 1 1.0 0.0
+# FR 0 {fnum} 0 0 {flow} {fstep}
+# XQ 0
+# EN
+# """
+# #
+# # Generate test dipoles for freqs of approx 1 - 50 MHz
+# for freq in range(1,51):
+#     y = 142.646 / freq / 2                  # Approx half-dipole length (m)
+#     z = np.random.rand() * 200 + 10         # Some random height (m)
+#     str = nec_dipole_start + gw_card.format(z=z,y=y) + nec_dipole_end
+
+#     f, iters = find_res_freq(str, freq*0.5, freq*1.5, tol=0.001, debug=True)
+#     print(freq, f, iters)
+
+
+#
+# Find bandwidth of a design (VSWR less than some value)
+#
+# Args:
+#   necstr      design as a single string; must include placeholders 'flow', 'fstep', 'fnum'
+#   vswr_th     vswr threshold to use for computing bandwidth
+#   flow, fhigh     extremes of frequency range to consider
+#   fnum        number of freq points in range [flow, fhigh]
+#   tol         freq tolerance to stop iteration (default: 0.001 MHz)
+#
+def find_vswr_bw(necstr, vswr_th, flow, fhigh, fnum=11, tol=0.001, debug=False):
+    # Func that converts freqs to -(vswr - vswr_th)
+    def func(fs):
+        res = nec5_sim_stdio3([necstr.format(fnum=len(fs), flow=fs[0], fstep=(fs[-1]-fs[0])/(len(fs)-1))])
+        xs = np.array([d[1] for d in res[0][0][0]])         # Feedpoint impedances
+        return -(vswr(xs) - vswr_th)
+    fs = np.linspace(flow, fhigh, num=fnum)                 # Initial freqs
+    xs = func(fs)                                           #  ...and values
+
+    bw_low = zoom_to_edge(func, fs, xs, tol=0.001, reverse=False)
+    bw_high = zoom_to_edge(func, fs, xs, tol=0.001, reverse=True)
+
+    if debug:
+        return (bw_high-bw_low, bw_low, bw_high)
+    return (bw_high-bw_low)
+
+  
+# #
+# # Test rig for above
+# #
+# # Simple dipole template
+# nec_dipole_start = """CE Dipole
+# """
+# gw_card = 'GW 1 10 0 0 {z} 0 {y} {z} 0.001\n'
+# nec_dipole_end = """GX 100 010
+# GE 1 0
+# GD 0 0 0 0 13 0.005 0 0
+# EX 4 1 1 1 1.0 0.0
+# FR 0 {fnum} 0 0 {flow} {fstep}
+# XQ 0
+# EN
+# """
+# #
+# # Generate test dipoles for freqs of approx 1 - 50 MHz
+# freq = 10
+# y = 142.646 / freq / 2                  # Approx half-dipole length (m)
+# # z = np.random.rand() * 200 + 10         # Some random height (m)
+# z = 50                                  # height (m)
+# str = nec_dipole_start + gw_card.format(z=z,y=y) + nec_dipole_end
+
+# t = find_vswr_bw(str, 2.0, freq*0.8, freq*1.2, fnum=11, tol=0.001, debug=True)
+# print(t)
+
+# res = nec5_sim_stdio3([str.format(fnum=100, flow=9, fstep=2/100)])
+# zs = res[0][0][0]         # freqs, zs
+# plot_vswr([zs], tags=[''])
+
+
+
+#
+# Trim a design to resonate at a specified frequency
+#
+# Args:
+#   necstr      design as a single string; must include placeholders 'len', 'flow', 'fstep', 'fnum'
+#               'len' is some design dimension that scales approximately as 1/f (e.g. dipole length)
+#   freq        desired resonant freq
+#   init_len    initial estimate of 'len'
+#   tol         freq tolerance to stop iteration (default: 0.001 MHz)
+#   f_range     range to search for resonance:  (1/f_range)*freq --> (f_range)*freq
+#
+def trim_res_freq(necstr, freq, init_len, tol=0.001, f_range=1.2, debug=False):
+
+    x, iters = (init_len, 0)
+    while True:
+        iters += 1
+        assert iters < 100
+
+        s = necstr.format(len=x, flow='{flow}', fstep='{fstep}', fnum='{fnum}')
+        f = find_res_freq(s, (1/f_range)*freq, (f_range)*freq, fnum=11, tol=tol/5)
+        if np.abs(f - freq) < tol:
+            break
+
+        x *= f / freq       # Adjust dimension
+
+    if debug:
+        return (x, f, s, iters)
+    return x
+
+
+
+
+# #
+# # Test rig for above
+# #
+# # Simple dipole template
+# necstr = """CE Dipole
+# GW 1 10 0 0 50 0 {len} 50 0.001
+# GX 100 010
+# GE 1 0
+# GD 0 0 0 0 13 0.005 0 0
+# EX 4 1 1 1 1.0 0.0
+# FR 0 {fnum} 0 0 {flow} {fstep}
+# XQ 0
+# EN
+# """
+# #
+# freq = 1.5
+# y = 142.646 / freq / 2                  # Approx half-dipole length (m)
+
+# (x, f, s, iters) = trim_res_freq(necstr, freq, y, tol=0.001, f_range=1.2, debug=True)
+# print(freq, y, f, x, iters)
+
+# res = nec5_sim_stdio3([necstr.format(len=x, fnum=100, flow=f*0.8, fstep=f*0.4/100)])
+# zs = res[0][0][0]         # freqs, zs
+# plot_vswr([zs], tags=[''])
+
+
+
+
 #%%------------------------------------------------
 #%%------------------------------------------------
 
