@@ -2020,5 +2020,40 @@ def trim_res_freq(necstr, freq, init_len, tol=0.001, f_range=1.2, debug=False):
 
 
 #%%------------------------------------------------
+
+#
+# Implements the series-section-matching equations from Regier (1971)
+#   zl      feedpoint impedances (numpy array)
+#   z0a     z0 of TL nearest antenna (and feedline to radio)
+#   z0b     z0 of matching section
+#
+#   Returns:    electrical lengths of TL sections (degrees):
+#       [len(a), len(b), len(a)(second solution), len(b)(second solution)]
+#       shape (len(zl), 4)
+
+def ssm_thetas(zl, z0a=50, z0b=75):
+    n = z0b/z0a
+    r = np.real(zl) / z0a
+    x = np.imag(zl) / z0a
+    thetab = np.arctan(np.sqrt(((r-1)**2 + x**2) / (r*(n-1/n)**2 - (r-1)**2 - x**2)))
+    thetaa = np.arctan(((n-r/n) * np.tan(thetab) + x) / (r + x*n*np.tan(thetab) - 1))
+    if not isinstance(zl, np.ndarray):
+        if thetaa < 0:
+            thetaa += np.pi
+    else:
+        thetaa[thetaa < 0] += np.pi
+    thetabn = np.pi - thetab
+    thetaan = np.arctan(((n-r/n) * np.tan(thetabn) + x) / (r + x*n*np.tan(thetabn) - 1))
+    if not isinstance(zl, np.ndarray):
+        if thetaan < 0:
+            thetaan += np.pi
+    else:
+        thetaan[thetaan < 0] += np.pi
+    return np.rad2deg(  np.array((thetaa,thetab,thetaan,thetabn)).transpose() )
+
+
+#%%------------------------------------------------
+#%%------------------------------------------------
+#%%------------------------------------------------
 #%%------------------------------------------------
 
