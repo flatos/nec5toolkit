@@ -2053,6 +2053,73 @@ def ssm_thetas(zl, z0a=50, z0b=75):
 
 
 #%%------------------------------------------------
+
+# Precompute some arrays
+import numpy as np
+from numba import njit
+
+# Precompute arrays A,B,C,D to speed impedance transformation calculations (lossless TL)
+#   zoa     z of first matching section (connected to antenna)
+#   zob     z of second matching section
+#   flow, fhigh, nfreq      freq band of interest
+#
+#   Usage:  precompute A,B,C,D once for specified parameters
+#       A,B,C,D = series_match_precompute(zoa=50,zob=75,nfreq=9,flow=3.5,fhigh=4.0)
+#
+#       z = (zs*A[a,b] + B[a,b]) / ((1j)*zs*C[a,b] + D[a,b])
+#           where   zs is a row vector of complex zs, shape (1,nfreq)
+#                   a,b   lengths of zoa,zob matching section (degrees)
+#
+@njit
+def series_match_precompute(zoa=50,zob=75,nfreq=9,flow=3.5,fhigh=4.0):
+    # Scale phase delay for freqs across band of interest
+    phscale = (np.linspace(flow,fhigh,num=nfreq) / ((fhigh+flow)/2))[None,:]
+    A = np.empty((181,181,nfreq))
+    B = np.empty((181,181,nfreq), dtype=np.complex128)
+    C = np.empty((181,181,nfreq))
+    D = np.empty((181,181,nfreq))
+    for a in range(181):
+        tana = np.tan(np.deg2rad(a*phscale))
+        for b in range(181):
+            tanb = np.tan(np.deg2rad(b*phscale))
+            A[a,b] = zoa*zob - zob**2 * tana * tanb
+            B[a,b] = zoa*zob*(zoa*tana + zob*tanb)*(1j)
+            C[a,b] = zob*tana + zoa*tanb
+            D[a,b] = zoa*(zob - zoa * tana * tanb)
+    return A,B,C,D
+# Exec time 35ms
+
+
+# Scan combinations of matching-section lengths to find optimum vswr in band of interest
+#
+# Args:
+#   zs      row vector of complex zs, shape (1,nfreq)
+#   step    step size (degrees) of matching section lengths,
+#           e.g. if step=2 all combinations of a=(0,2,4,...) and b=(0,2,4,...) will be tried
+#
+# Returns:  optimal lengths of matching sections zoa,zob for minimum vswr in freq band
+#
+@njit
+def series_match_scan(zs, A,B,C,D, step=1, z0=50.0):
+    aopt, bopt, vswr_max_opt, vswr_curve_opt = (0, 0, 99999.0, None)
+    for a in range(0,A.shape[0],step):
+        for b in range(0,A.shape[1],step):
+
+            z = (zs*A[a,b] + B[a,b]) / ((1j)*zs*C[a,b] + D[a,b])
+            arf = np.abs((z - z0) / (z + z0))         # Reflection coefs
+            vswr_curve = (1 + arf) / (1 - arf)
+            vswr_max = np.max(vswr_curve)
+            if vswr_max < vswr_max_opt:
+                vswr_max_opt = vswr_max
+                aopt = a
+                bopt = b
+                vswr_curve_opt = vswr_curve
+    return aopt,bopt,vswr_curve_opt,vswr_max_opt
+
+
+
+
+
 #%%------------------------------------------------
 #%%------------------------------------------------
 #%%------------------------------------------------
