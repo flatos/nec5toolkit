@@ -2264,7 +2264,10 @@ class SolidAntenna(SolidObject):
                            'rotate':[], 'translate':(0,0,0)}
         self.properties.update(properties)
         self.els = [dict() for i in range(n_elem)]          # Elements (each represented as a dict)
-        self.driven = 2     # Tag of driven element (can be overridden with 'driven' property on an element)
+        if n_elem == 1:
+            self.driven = 1     # Tag of driven element (can be overridden with 'driven' property on an element)
+        else:
+            self.driven = 2   
 
     # Use '[]' syntax to access the list of elements
     def __len__(self):
@@ -2504,7 +2507,8 @@ class SolidAntenna(SolidObject):
                 tag = ds[2]                             # Tag
                 segs = ds[3][idx]                       # Segments in this wire
                 rad = ds[1][idx]                        # Radius
-                s += f'GW {tag} {segs} {x0} {y0} {z0} {x1} {y1} {z1} {rad}\n' 
+                # s += f'GW {tag} {segs} {x0:.3f} {y0:.3f} {z0:.3f} {x1:.3f} {y1:.3f} {z1:.3f} {rad}\n' 
+                s += f'GW {tag} {segs} {x0:E} {y0:E} {z0:E} {x1:E} {y1:E} {z1:E} {rad}\n' 
                          
         return s
     
